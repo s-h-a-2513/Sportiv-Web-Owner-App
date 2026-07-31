@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-raised: var(--raised);
+  --color-inset: var(--inset);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-court: var(--court);
+  --font-sans: var(--font-dm-sans);
+  --font-display: var(--font-outfit);
+  --shadow-neu: var(--neu);
+  --shadow-neu-sm: var(--neu-sm);
+  --shadow-neu-inset: var(--neu-inset);
+}
+
+:root {
+  --bg: #fffaf6;
+  --raised: #ffffff;
+  --inset: #fff4eb;
+  --ink: #1a1410;
+  --muted: #3d342e;
+  --court: #ff6b00;
+  --neu:
+    8px 8px 20px rgba(26, 20, 16, 0.07),
+    -6px -6px 16px rgba(255, 255, 255, 0.85);
+  --neu-sm:
+    4px 4px 10px rgba(26, 20, 16, 0.06),
+    -3px -3px 8px rgba(255, 255, 255, 0.9);
+  --neu-inset:
+    inset 3px 3px 8px rgba(26, 20, 16, 0.06),
+    inset -3px -3px 8px rgba(255, 255, 255, 0.75);
+}
+
+.dark {
+  --bg: #1e1e1e;
+  --raised: #242424;
+  --inset: #181818;
+  --ink: #f2f2f2;
+  --muted: #a8a8a8;
+  --court: #f15a24;
+  --neu:
+    8px 8px 20px rgba(0, 0, 0, 0.45),
+    -4px -4px 14px rgba(255, 255, 255, 0.03);
+  --neu-sm:
+    4px 4px 10px rgba(0, 0, 0, 0.4),
+    -2px -2px 8px rgba(255, 255, 255, 0.03);
+  --neu-inset:
+    inset 3px 3px 8px rgba(0, 0, 0, 0.35),
+    inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: var(--font-outfit), system-ui, sans-serif;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--court) 35%, transparent);
+  color: var(--ink);
+}

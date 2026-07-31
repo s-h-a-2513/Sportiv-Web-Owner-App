@@ -1,0 +1,31 @@
+import { createClient } from "@/lib/supabase/server";
+import { AppSidebar } from "@/components/app-sidebar";
+
+export default async function AppLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const displayName =
+    (user?.user_metadata?.full_name as string | undefined) ||
+    (user?.user_metadata?.business_name as string | undefined) ||
+    user?.email ||
+    "Owner";
+
+  return (
+    <div className="flex min-h-screen bg-bg">
+      <AppSidebar />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="sr-only" aria-live="polite">
+          Signed in as {displayName}
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
