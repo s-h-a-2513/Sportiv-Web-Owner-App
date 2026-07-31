@@ -22,10 +22,7 @@ export function ThemeToggle({ className }: { className?: string }) {
   if (!mounted) {
     return (
       <div
-        className={cn(
-          "inline-flex h-9 w-[108px] rounded-xl bg-inset shadow-neu-inset",
-          className,
-        )}
+        className={cn("neu-theme-toggle inline-flex h-9 w-[108px] rounded-full", className)}
         aria-hidden
       />
     );
@@ -36,7 +33,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       role="group"
       aria-label="Theme"
       className={cn(
-        "inline-flex items-center gap-0.5 rounded-xl bg-inset p-1 shadow-neu-inset",
+        "neu-theme-toggle inline-flex items-center gap-0.5 rounded-full p-1",
         className,
       )}
     >
@@ -51,10 +48,10 @@ export function ThemeToggle({ className }: { className?: string }) {
             aria-pressed={active}
             onClick={() => setTheme(value)}
             className={cn(
-              "flex h-7 w-7 items-center justify-center rounded-lg transition-colors",
+              "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
               active
-                ? "bg-raised text-court shadow-neu-sm"
-                : "text-muted hover:text-ink",
+                ? "neu-theme-knob neu-theme-knob-ready text-court"
+                : "bg-transparent text-muted hover:text-ink",
             )}
           >
             <Icon className="h-3.5 w-3.5" strokeWidth={2.25} />

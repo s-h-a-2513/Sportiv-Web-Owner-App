@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/app-header";
 import { PageShell, SoftCard } from "@/components/ui/page";
-import { Button } from "@/components/ui/form";
+import { Button, FormMessage } from "@/components/ui/form";
 import { listOwnerFields } from "@/lib/api/fields";
 import { listWeeklySchedules } from "@/lib/api/schedules";
 import type { Field } from "@/lib/types";
@@ -55,21 +55,21 @@ export default function SchedulePage() {
           {loading ? (
             <p className="text-sm text-muted">Loading…</p>
           ) : error ? (
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <FormMessage>{error}</FormMessage>
           ) : fields.length === 0 ? (
             <div className="text-center">
               <p className="text-sm text-muted">No fields yet.</p>
-              <Link href="/app/fields/new" className="mt-3 inline-block">
+              <Link href="/app/fields/new" className="mt-3 inline-block no-underline hover:no-underline">
                 <Button type="button">Add a field</Button>
               </Link>
             </div>
           ) : (
-            <ul className="divide-y divide-ink/5 rounded-2xl bg-inset shadow-neu-inset">
+            <ul className="space-y-2">
               {fields.map((f) => (
                 <li key={f.id}>
                   <Link
                     href={`/app/fields/${f.id}/schedule`}
-                    className="flex items-center justify-between px-4 py-3 text-sm hover:bg-raised/50"
+                    className="neu-raised-sm flex items-center justify-between rounded-[20px] px-4 py-3 text-sm no-underline hover:no-underline"
                   >
                     <span className="font-medium text-ink">{f.name}</span>
                     <span className="text-muted">

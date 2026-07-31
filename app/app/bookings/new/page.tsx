@@ -196,8 +196,8 @@ export default function NewBookingPage() {
                   onClick={() => setMode("guest")}
                   className={
                     mode === "guest"
-                      ? "rounded-xl bg-court px-3 py-2 text-sm font-semibold text-white"
-                      : "rounded-xl bg-inset px-3 py-2 text-sm text-muted shadow-neu-inset"
+                      ? "neu-btn rounded-full px-3 py-2 text-sm font-semibold text-white"
+                      : "neu-tab rounded-full px-3 py-2 text-sm font-medium"
                   }
                 >
                   Walk-in guest
@@ -207,8 +207,8 @@ export default function NewBookingPage() {
                   onClick={() => setMode("player")}
                   className={
                     mode === "player"
-                      ? "rounded-xl bg-court px-3 py-2 text-sm font-semibold text-white"
-                      : "rounded-xl bg-inset px-3 py-2 text-sm text-muted shadow-neu-inset"
+                      ? "neu-btn rounded-full px-3 py-2 text-sm font-semibold text-white"
+                      : "neu-tab rounded-full px-3 py-2 text-sm font-medium"
                   }
                 >
                   Existing player

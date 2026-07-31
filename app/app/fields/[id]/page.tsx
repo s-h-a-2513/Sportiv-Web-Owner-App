@@ -265,8 +265,8 @@ export default function FieldDetailPage() {
                       onClick={() => toggleSport(opt.value)}
                       className={
                         on
-                          ? "rounded-xl bg-court px-3 py-1.5 text-xs font-semibold text-white"
-                          : "rounded-xl bg-inset px-3 py-1.5 text-xs font-medium text-muted shadow-neu-inset"
+                          ? "neu-btn rounded-full px-3 py-1.5 text-xs font-semibold text-white"
+                          : "neu-tab rounded-full px-3 py-1.5 text-xs font-medium"
                       }
                     >
                       {opt.label}

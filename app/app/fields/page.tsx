@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/app-header";
 import { PageShell, SoftCard, StatChip } from "@/components/ui/page";
-import { Button } from "@/components/ui/form";
+import { Button, FormMessage } from "@/components/ui/form";
 import { formatSports, listOwnerFields } from "@/lib/api/fields";
 import type { Field } from "@/lib/types";
 
@@ -53,24 +53,24 @@ export default function FieldsPage() {
           {loading ? (
             <p className="text-sm text-muted">Loading fields…</p>
           ) : error ? (
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <FormMessage>{error}</FormMessage>
           ) : fields.length === 0 ? (
-            <div className="rounded-2xl bg-inset px-4 py-8 text-center shadow-neu-inset">
-              <p className="font-medium text-ink">No fields yet</p>
+            <div className="neu-inset rounded-[20px] px-4 py-8 text-center">
+              <p className="font-semibold text-ink">No fields yet</p>
               <p className="mt-1 text-sm text-muted">
                 Add your first court to start taking bookings.
               </p>
-              <Link href="/app/fields/new" className="mt-4 inline-block">
+              <Link href="/app/fields/new" className="mt-4 inline-block no-underline hover:no-underline">
                 <Button type="button">Add a field</Button>
               </Link>
             </div>
           ) : (
-            <ul className="divide-y divide-ink/5 rounded-2xl bg-inset shadow-neu-inset">
+            <ul className="space-y-2">
               {fields.map((field) => (
                 <li key={field.id}>
                   <Link
                     href={`/app/fields/${field.id}`}
-                    className="flex items-center justify-between gap-3 px-4 py-3 text-sm hover:bg-raised/50"
+                    className="neu-raised-sm flex items-center justify-between gap-3 rounded-[20px] px-4 py-3 text-sm no-underline hover:no-underline"
                   >
                     <div className="min-w-0">
                       <p className="truncate font-medium text-ink">{field.name}</p>

@@ -179,7 +179,7 @@ export default function OverviewPage() {
               <li key={item.label}>
                 <Link
                   href={item.href}
-                  className="flex items-center justify-between rounded-xl bg-inset px-4 py-3 text-sm shadow-neu-inset hover:bg-raised/60"
+                  className="neu-inset flex items-center justify-between rounded-[20px] px-4 py-3 text-sm no-underline hover:no-underline"
                 >
                   <span className={item.ok ? "text-ink" : "text-muted"}>{item.label}</span>
                   <span className={item.ok ? "text-court" : "text-muted"}>
@@ -212,12 +212,12 @@ export default function OverviewPage() {
           ) : upcoming.length === 0 ? (
             <p className="text-sm text-muted">No upcoming bookings.</p>
           ) : (
-            <ul className="divide-y divide-ink/5 rounded-2xl bg-inset shadow-neu-inset">
+            <ul className="space-y-2">
               {upcoming.map((b) => (
                 <li key={b.id}>
                   <Link
                     href={`/app/bookings/${b.id}`}
-                    className="flex items-center justify-between gap-3 px-4 py-3 text-sm hover:bg-raised/50"
+                    className="neu-raised-sm flex items-center justify-between gap-3 rounded-[20px] px-4 py-3 text-sm no-underline hover:no-underline"
                   >
                     <span className="font-medium text-ink">
                       {b.fields?.name ?? "Field"} · {bookingCustomerLabel(b)}

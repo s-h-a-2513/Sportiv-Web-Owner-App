@@ -11,7 +11,7 @@ import type {
 export function Label({ className, ...props }: LabelHTMLAttributes<HTMLLabelElement>) {
   return (
     <label
-      className={cn("mb-1.5 block text-sm font-medium text-ink", className)}
+      className={cn("mb-1.5 block text-sm font-semibold text-ink", className)}
       {...props}
     />
   );
@@ -21,7 +21,7 @@ export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElem
   return (
     <input
       className={cn(
-        "w-full rounded-xl border border-transparent bg-inset px-3.5 py-2.5 text-sm text-ink shadow-neu-inset outline-none transition placeholder:text-muted/70 focus:border-court/40",
+        "neu-input w-full rounded-[20px] px-3.5 py-2.5 text-sm text-ink outline-none transition placeholder:text-muted/70",
         className,
       )}
       {...props}
@@ -33,7 +33,7 @@ export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTex
   return (
     <textarea
       className={cn(
-        "w-full rounded-xl border border-transparent bg-inset px-3.5 py-2.5 text-sm text-ink shadow-neu-inset outline-none transition placeholder:text-muted/70 focus:border-court/40",
+        "neu-input w-full rounded-[20px] px-3.5 py-2.5 text-sm text-ink outline-none transition placeholder:text-muted/70",
         className,
       )}
       {...props}
@@ -51,10 +51,10 @@ export function Button({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
-        variant === "primary" && "bg-court text-white shadow-neu-sm hover:brightness-105",
-        variant === "secondary" && "bg-raised text-ink shadow-neu-sm hover:bg-inset",
-        variant === "ghost" && "text-muted hover:bg-inset hover:text-ink",
+        "inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
+        variant === "primary" && "neu-btn",
+        variant === "secondary" && "neu-raised-sm text-ink hover:brightness-[1.02]",
+        variant === "ghost" && "text-muted hover:text-ink",
         className,
       )}
       {...props}
@@ -75,7 +75,7 @@ export function Select({
   return (
     <select
       className={cn(
-        "w-full rounded-xl border border-transparent bg-inset px-3.5 py-2.5 text-sm text-ink shadow-neu-inset outline-none transition focus:border-court/40",
+        "neu-input w-full rounded-[20px] px-3.5 py-2.5 text-sm text-ink outline-none transition",
         className,
       )}
       {...props}
@@ -96,7 +96,7 @@ export function FormMessage({
   return (
     <p
       className={cn(
-        "rounded-xl bg-inset px-3 py-2 text-sm shadow-neu-inset",
+        "neu-inset rounded-[20px] px-3 py-2 text-sm",
         tone === "error" && "text-red-600 dark:text-red-400",
         tone === "success" && "text-court",
         tone === "info" && "text-muted",

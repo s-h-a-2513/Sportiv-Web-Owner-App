@@ -21,6 +21,10 @@ export const metadata: Metadata = {
     template: "%s · Sportiv Owner",
   },
   description: "Field owner dashboard for Sportiv",
+  icons: {
+    icon: "/assets/favicon.png",
+    apple: "/assets/sportiv_mark.png",
+  },
 };
 
 export default function RootLayout({
@@ -30,7 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={`${outfit.variable} ${dmSans.variable}`}>
-      <body className="min-h-screen bg-bg text-ink antialiased">
+      <body className="bg-wash-scene min-h-screen text-ink antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>

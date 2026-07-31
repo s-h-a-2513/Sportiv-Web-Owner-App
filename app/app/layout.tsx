@@ -18,7 +18,7 @@ export default async function AppLayout({
     "Owner";
 
   return (
-    <div className="flex min-h-screen bg-bg">
+    <div className="bg-wash-scene flex min-h-screen">
       <AppSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="sr-only" aria-live="polite">

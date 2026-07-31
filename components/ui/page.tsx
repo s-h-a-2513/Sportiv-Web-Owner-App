@@ -8,21 +8,27 @@ export function PageShell({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={cn("flex flex-1 flex-col gap-6 p-6", className)}>{children}</div>;
+  return (
+    <div className={cn("flex flex-1 flex-col gap-6 px-6 py-8 md:px-10 md:py-10", className)}>
+      {children}
+    </div>
+  );
 }
 
 export function SoftCard({
   title,
   description,
   children,
+  className,
 }: {
   title: string;
   description?: string;
   children?: ReactNode;
+  className?: string;
 }) {
   return (
-    <section className="rounded-2xl bg-raised p-6 shadow-neu">
-      <h2 className="font-display text-lg font-semibold text-ink">{title}</h2>
+    <section className={cn("neu-raised rounded-[28px] p-6 md:p-8", className)}>
+      <h2 className="font-display text-lg font-bold tracking-tight text-ink">{title}</h2>
       {description ? (
         <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted">{description}</p>
       ) : null}
@@ -42,9 +48,9 @@ export function PlaceholderCard(props: {
 
 export function StatChip({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-inset px-4 py-3 shadow-neu-inset">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted">{label}</p>
-      <p className="mt-1 font-display text-2xl font-semibold text-ink">{value}</p>
+    <div className="neu-inset rounded-[20px] px-4 py-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</p>
+      <p className="mt-1 font-display text-2xl font-bold text-ink">{value}</p>
     </div>
   );
 }
