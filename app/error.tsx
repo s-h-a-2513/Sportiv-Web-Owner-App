@@ -17,12 +17,15 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="mx-auto flex min-h-[50vh] max-w-lg flex-col items-start justify-center gap-4 px-6 py-16">
-      <h2 className="text-2xl font-semibold text-ink">Something went wrong</h2>
+    <div className="bg-wash-scene mx-auto flex min-h-[50vh] max-w-lg flex-col items-start justify-center gap-4 px-6 py-16">
+      <h2 className="font-display text-2xl font-bold text-ink">Something went wrong</h2>
       <p className="text-sm text-muted">
         An unexpected error occurred
         {error.digest ? ` (digest ${error.digest})` : ""}.
       </p>
+      {process.env.NODE_ENV === "development" && error.message ? (
+        <p className="neu-inset w-full rounded-[20px] px-3 py-2 text-sm text-ink">{error.message}</p>
+      ) : null}
       <Button type="button" onClick={reset}>
         Try again
       </Button>
