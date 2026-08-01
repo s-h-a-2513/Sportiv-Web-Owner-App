@@ -103,11 +103,11 @@ export default function AccountPage() {
                 onChange={(e) => setBusinessName(e.target.value)}
               />
             </div>
-            <div className="rounded-2xl bg-inset p-4 shadow-neu-inset">
+            <div className="neu-inset rounded-[20px] p-4">
               <p className="text-xs uppercase tracking-wide text-muted">Email</p>
               <p className="mt-1 font-medium text-ink">{email || "—"}</p>
             </div>
-            <div className="rounded-2xl bg-inset p-4 shadow-neu-inset">
+            <div className="neu-inset rounded-[20px] p-4">
               <p className="text-xs uppercase tracking-wide text-muted">Verification</p>
               <p className="mt-1 font-medium text-ink">{verificationLabel(verification)}</p>
             </div>

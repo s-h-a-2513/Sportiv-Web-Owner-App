@@ -244,7 +244,7 @@ export default function CalendarPage() {
               );
               const dayHolds = holds.filter((h) => karachiDateString(h.starts_at) === day);
               return (
-                <div key={day} className="rounded-2xl bg-inset p-3 shadow-neu-inset">
+                <div key={day} className="neu-inset rounded-[20px] p-3">
                   <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
                     {formatKarachi(`${day}T12:00:00+05:00`, {
                       weekday: "long",
@@ -260,7 +260,7 @@ export default function CalendarPage() {
                         <li key={b.id}>
                           <Link
                             href={`/app/bookings/${b.id}`}
-                            className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-raised px-3 py-2 text-sm shadow-neu-sm hover:brightness-[1.02]"
+                            className="neu-raised-sm flex flex-wrap items-center justify-between gap-2 rounded-[20px] px-3 py-2 text-sm no-underline hover:no-underline"
                           >
                             <span className="font-medium text-ink">
                               {formatKarachiTime(b.starts_at)}–{formatKarachiTime(b.ends_at)} ·{" "}
@@ -275,7 +275,7 @@ export default function CalendarPage() {
                       {dayHolds.map((h) => (
                         <li
                           key={h.id}
-                          className="rounded-xl bg-raised/70 px-3 py-2 text-sm text-muted"
+                          className="neu-raised-sm rounded-[20px] px-3 py-2 text-sm text-muted"
                         >
                           Hold · {formatKarachiTime(h.starts_at)}–{formatKarachiTime(h.ends_at)}
                           {h.reason ? ` · ${h.reason}` : ""}

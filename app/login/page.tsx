@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { AuthShell } from "@/components/auth-shell";
-import { Button, FieldError, Input, Label } from "@/components/ui/form";
+import { Button, FieldError, FormMessage, Input, Label } from "@/components/ui/form";
 import { createClient } from "@/lib/supabase/client";
 import { isOwner } from "@/lib/auth";
 
@@ -97,11 +97,7 @@ function LoginForm() {
           <FieldError message={errors.password?.message} />
         </div>
 
-        {formError ? (
-          <p className="rounded-xl bg-inset px-3 py-2 text-sm text-red-600 shadow-neu-inset dark:text-red-400">
-            {formError}
-          </p>
-        ) : null}
+        {formError ? <FormMessage>{formError}</FormMessage> : null}
 
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? "Signing in…" : "Sign in"}
@@ -115,7 +111,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-bg text-muted">
+        <div className="bg-wash-scene flex min-h-screen items-center justify-center text-muted">
           Loading…
         </div>
       }

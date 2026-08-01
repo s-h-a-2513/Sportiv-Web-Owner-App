@@ -172,14 +172,14 @@ export default function FieldSchedulePage() {
           title="Weekly hours"
           description="Weekday 0 = Sunday … 6 = Saturday (Asia/Karachi)."
         >
-          <ul className="mb-4 divide-y divide-ink/5 rounded-2xl bg-inset shadow-neu-inset">
+          <ul className="mb-4 space-y-2">
             {weekly.length === 0 ? (
-              <li className="px-4 py-3 text-sm text-muted">No weekly windows yet.</li>
+              <li className="neu-inset rounded-[20px] px-4 py-3 text-sm text-muted">No weekly windows yet.</li>
             ) : (
               weekly.map((row) => (
                 <li
                   key={row.id}
-                  className="flex items-center justify-between gap-3 px-4 py-3 text-sm"
+                  className="neu-raised-sm flex items-center justify-between gap-3 rounded-[20px] px-4 py-3 text-sm"
                 >
                   <span className="text-ink">
                     {WEEKDAY_LABELS[row.weekday]} · {row.start_time.slice(0, 5)}–
@@ -238,14 +238,14 @@ export default function FieldSchedulePage() {
           title="Exceptions"
           description="Close a date or override open hours for a single day."
         >
-          <ul className="mb-4 divide-y divide-ink/5 rounded-2xl bg-inset shadow-neu-inset">
+          <ul className="mb-4 space-y-2">
             {exceptions.length === 0 ? (
-              <li className="px-4 py-3 text-sm text-muted">No exceptions.</li>
+              <li className="neu-inset rounded-[20px] px-4 py-3 text-sm text-muted">No exceptions.</li>
             ) : (
               exceptions.map((row) => (
                 <li
                   key={row.id}
-                  className="flex items-center justify-between gap-3 px-4 py-3 text-sm"
+                  className="neu-raised-sm flex items-center justify-between gap-3 rounded-[20px] px-4 py-3 text-sm"
                 >
                   <span className="text-ink">
                     {row.exception_date} ·{" "}
@@ -310,14 +310,14 @@ export default function FieldSchedulePage() {
           {!holdsAvailable && holdsHint ? (
             <FormMessage tone="info">{holdsHint}</FormMessage>
           ) : null}
-          <ul className="mb-4 divide-y divide-ink/5 rounded-2xl bg-inset shadow-neu-inset">
+          <ul className="mb-4 space-y-2">
             {holds.length === 0 ? (
-              <li className="px-4 py-3 text-sm text-muted">No holds in the next 7 days.</li>
+              <li className="neu-inset rounded-[20px] px-4 py-3 text-sm text-muted">No holds in the next 7 days.</li>
             ) : (
               holds.map((h) => (
                 <li
                   key={h.id}
-                  className="flex items-center justify-between gap-3 px-4 py-3 text-sm"
+                  className="neu-raised-sm flex items-center justify-between gap-3 rounded-[20px] px-4 py-3 text-sm"
                 >
                   <span className="text-ink">
                     {formatKarachi(h.starts_at)} → {formatKarachiTimeSafe(h.ends_at)}
@@ -375,9 +375,12 @@ export default function FieldSchedulePage() {
           {slots.length === 0 ? (
             <p className="text-sm text-muted">No open slots (check hours and activity).</p>
           ) : (
-            <ul className="max-h-72 divide-y divide-ink/5 overflow-auto rounded-2xl bg-inset shadow-neu-inset">
+            <ul className="max-h-72 space-y-2 overflow-auto">
               {slots.map((slot) => (
-                <li key={slot.starts_at} className="flex justify-between px-4 py-2 text-sm">
+                <li
+                  key={slot.starts_at}
+                  className="neu-raised-sm flex justify-between rounded-[20px] px-4 py-2 text-sm"
+                >
                   <span className="text-ink">{formatKarachi(slot.starts_at)}</span>
                   <span className="text-muted">PKR {Number(slot.price).toLocaleString()}</span>
                 </li>

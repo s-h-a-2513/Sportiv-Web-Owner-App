@@ -70,7 +70,7 @@ export function NotificationsPanel() {
         type="button"
         aria-label="Notifications"
         onClick={() => setOpen((v) => !v)}
-        className="relative rounded-xl bg-inset p-2 text-muted shadow-neu-inset hover:text-ink"
+        className="neu-raised-sm relative rounded-full p-2 text-muted hover:text-ink"
       >
         <Bell className="h-4 w-4" />
         {items.length > 0 ? (
@@ -79,17 +79,13 @@ export function NotificationsPanel() {
       </button>
 
       {toast ? (
-        <div className="fixed bottom-4 right-4 z-50 max-w-sm rounded-2xl bg-raised px-4 py-3 text-sm text-ink shadow-neu">
+        <div className="neu-raised fixed bottom-4 right-4 z-50 max-w-sm rounded-[20px] px-4 py-3 text-sm text-ink">
           {toast}
         </div>
       ) : null}
 
       {open ? (
-        <div
-          className={cn(
-            "absolute right-0 z-40 mt-2 w-80 rounded-2xl bg-raised p-3 shadow-neu",
-          )}
-        >
+        <div className={cn("neu-raised absolute right-0 z-40 mt-2 w-80 rounded-[28px] p-3")}>
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
             Recent booking events
           </p>
@@ -102,7 +98,7 @@ export function NotificationsPanel() {
                   <Link
                     href={`/app/bookings/${item.bookingId}`}
                     onClick={() => setOpen(false)}
-                    className="block rounded-xl px-3 py-2 text-sm hover:bg-inset"
+                    className="block rounded-[16px] px-3 py-2 text-sm no-underline hover:neu-inset hover:no-underline"
                   >
                     <p className="font-medium text-ink">{item.title}</p>
                     <p className="text-xs text-muted">{formatKarachiTime(item.at)}</p>

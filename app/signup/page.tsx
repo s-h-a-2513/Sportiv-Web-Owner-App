@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { AuthShell } from "@/components/auth-shell";
-import { Button, FieldError, Input, Label } from "@/components/ui/form";
+import { Button, FieldError, FormMessage, Input, Label } from "@/components/ui/form";
 import { createClient } from "@/lib/supabase/client";
 
 const schema = z
@@ -103,13 +103,13 @@ export default function SignupPage() {
     >
       {success ? (
         <div className="space-y-4 text-sm text-muted">
-          <p className="rounded-xl bg-inset px-3 py-3 text-ink shadow-neu-inset">
+          <FormMessage tone="success">
             Account created. You can now{" "}
             <Link href="/login" className="font-medium text-court hover:underline">
               sign in
             </Link>
             .
-          </p>
+          </FormMessage>
         </div>
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -149,11 +149,7 @@ export default function SignupPage() {
             <FieldError message={errors.confirm_password?.message} />
           </div>
 
-          {formError ? (
-            <p className="rounded-xl bg-inset px-3 py-2 text-sm text-red-600 shadow-neu-inset dark:text-red-400">
-              {formError}
-            </p>
-          ) : null}
+          {formError ? <FormMessage>{formError}</FormMessage> : null}
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? "Creating account…" : "Create account"}

@@ -94,7 +94,7 @@ export function FormMessage({
 }) {
   if (!children) return null;
   return (
-    <p
+    <div
       className={cn(
         "neu-inset rounded-[20px] px-3 py-2 text-sm",
         tone === "error" && "text-red-600 dark:text-red-400",
@@ -103,6 +103,6 @@ export function FormMessage({
       )}
     >
       {children}
-    </p>
+    </div>
   );
 }

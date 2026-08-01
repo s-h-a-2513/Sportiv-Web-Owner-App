@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import * as Sentry from "@sentry/nextjs";
+import { BrandMark } from "@/components/brand-mark";
+import { Button } from "@/components/ui/form";
 
 /**
  * Temporary public page to verify Sentry error capture end-to-end.
@@ -11,56 +13,27 @@ export default function SentryExamplePage() {
   const [sent, setSent] = useState(false);
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 24,
-        fontFamily: "system-ui, sans-serif",
-        background: "#FFFAF6",
-        color: "#1A1410",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 420,
-          width: "100%",
-          borderRadius: 20,
-          padding: 24,
-          background: "#fff",
-          boxShadow: "0 8px 24px rgba(26,20,16,0.08)",
-        }}
-      >
-        <h1 style={{ fontSize: 22, marginBottom: 8 }}>Sentry example</h1>
-        <p style={{ fontSize: 14, color: "#3D342E", marginBottom: 16 }}>
+    <main className="bg-wash-scene flex min-h-screen items-center justify-center px-6 py-12 md:px-10">
+      <div className="neu-raised w-full max-w-md rounded-[28px] p-6 md:p-8">
+        <BrandMark size="md" href="/" className="mb-6" />
+        <h1 className="font-display text-2xl font-bold tracking-tight text-ink">Sentry example</h1>
+        <p className="mt-2 text-sm text-muted">
           Captures a real client exception through the Next.js SDK init path.
         </p>
-        <button
+        <Button
           type="button"
-          style={{
-            background: "#FF6B00",
-            color: "#fff",
-            border: "none",
-            borderRadius: 12,
-            padding: "10px 16px",
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
+          className="mt-6"
           onClick={() => {
             setSent(true);
             Sentry.captureException(
-              new Error(
-                "Sportiv owner-web Sentry test error (first-error setup)",
-              ),
+              new Error("Sportiv owner-web Sentry test error (first-error setup)"),
             );
           }}
         >
           Send test error
-        </button>
+        </Button>
         {sent ? (
-          <p style={{ marginTop: 12, fontSize: 14, color: "#FF6B00" }}>
+          <p className="mt-3 text-sm font-semibold text-court">
             Event sent — waiting for it to appear in Sentry…
           </p>
         ) : null}

@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { AuthShell } from "@/components/auth-shell";
-import { Button, FieldError, Input, Label } from "@/components/ui/form";
+import { Button, FieldError, FormMessage, Input, Label } from "@/components/ui/form";
 import { createClient } from "@/lib/supabase/client";
 
 const schema = z.object({
@@ -58,9 +58,9 @@ export default function ResetPasswordPage() {
       }
     >
       {sent ? (
-        <p className="rounded-xl bg-inset px-3 py-3 text-sm text-ink shadow-neu-inset">
+        <FormMessage tone="info">
           If an account exists for that email, a reset link is on its way.
-        </p>
+        </FormMessage>
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
@@ -69,11 +69,7 @@ export default function ResetPasswordPage() {
             <FieldError message={errors.email?.message} />
           </div>
 
-          {formError ? (
-            <p className="rounded-xl bg-inset px-3 py-2 text-sm text-red-600 shadow-neu-inset dark:text-red-400">
-              {formError}
-            </p>
-          ) : null}
+          {formError ? <FormMessage>{formError}</FormMessage> : null}
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? "Sending…" : "Send reset link"}

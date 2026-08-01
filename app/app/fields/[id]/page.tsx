@@ -302,7 +302,7 @@ export default function FieldDetailPage() {
         <SoftCard title="Photos" description="Uploaded to the field-photos bucket.">
           <div className="flex flex-wrap gap-3">
             {photos.map((photo) => (
-              <div key={photo.id} className="relative w-32 overflow-hidden rounded-xl bg-inset shadow-neu-inset">
+              <div key={photo.id} className="neu-inset relative w-32 overflow-hidden rounded-[20px]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={fieldPhotoPublicUrl(photo.storage_path)}
@@ -332,7 +332,7 @@ export default function FieldDetailPage() {
         </SoftCard>
 
         <SoftCard title="Listing preview" description="How players will see this field.">
-          <div className="rounded-2xl bg-inset p-4 shadow-neu-inset">
+          <div className="neu-inset rounded-[20px] p-4">
             <div className="flex gap-4">
               {photos[0] ? (
                 // eslint-disable-next-line @next/next/no-img-element

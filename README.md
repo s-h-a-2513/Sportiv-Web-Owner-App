@@ -34,8 +34,12 @@ Fill in:
 | Variable | Description |
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/public key |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/public key (full JWT, not truncated) |
 | `NEXT_PUBLIC_SENTRY_DSN` | Optional Sentry DSN |
+
+### Vercel / production
+
+`.env.local` is not deployed. In the host project settings add the same `NEXT_PUBLIC_SUPABASE_*` variables for **Production** (and Preview if needed), then **redeploy**. If they are missing, the app redirects to `/setup` with instructions instead of a blank error digest.
 
 4. **Run the dev server**
 

@@ -135,7 +135,7 @@ export default function BookingDetailPage() {
         {error ? <FormMessage>{error}</FormMessage> : null}
 
         <SoftCard title="Details" description={`Source: ${booking.source}`}>
-          <div className="grid gap-3 rounded-2xl bg-inset p-4 text-sm shadow-neu-inset sm:grid-cols-2">
+          <div className="neu-inset grid gap-3 rounded-[20px] p-4 text-sm sm:grid-cols-2">
             <div>
               <p className="text-xs uppercase tracking-wide text-muted">Status</p>
               <p className="mt-1 font-medium text-ink">
