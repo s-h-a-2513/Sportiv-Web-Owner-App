@@ -3,7 +3,9 @@ export function pointEwkt(lng: number, lat: number): string {
   return `SRID=4326;POINT(${lng} ${lat})`;
 }
 
-export function parseLatLng(location: unknown): { lat: number; lng: number } | null {
+export type LatLng = { lat: number; lng: number };
+
+export function parseLatLng(location: unknown): LatLng | null {
   if (location == null) return null;
 
   if (typeof location === "object" && location !== null) {

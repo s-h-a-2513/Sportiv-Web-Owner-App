@@ -27,6 +27,7 @@ import {
   uploadFieldPhoto,
 } from "@/lib/api/fields";
 import { parseLatLng } from "@/lib/location";
+import { LocationMapPicker } from "@/components/location-map-picker";
 import { SPORT_OPTIONS, type Field, type FieldPhoto, type SportType } from "@/lib/types";
 
 const schema = z.object({
@@ -67,6 +68,8 @@ export default function FieldDetailPage() {
   });
 
   const selectedSports = watch("sports") ?? [];
+  const lat = watch("lat");
+  const lng = watch("lng");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -243,16 +246,16 @@ export default function FieldDetailPage() {
               <Label htmlFor="city">City</Label>
               <Input id="city" {...register("city")} />
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <Label htmlFor="lat">Latitude</Label>
-                <Input id="lat" type="number" step="any" {...register("lat")} />
-              </div>
-              <div>
-                <Label htmlFor="lng">Longitude</Label>
-                <Input id="lng" type="number" step="any" {...register("lng")} />
-              </div>
-            </div>
+            {typeof lat === "number" && typeof lng === "number" ? (
+              <LocationMapPicker
+                value={{ lat, lng }}
+                onChange={({ lat: nextLat, lng: nextLng }) => {
+                  setValue("lat", nextLat, { shouldValidate: true, shouldDirty: true });
+                  setValue("lng", nextLng, { shouldValidate: true, shouldDirty: true });
+                }}
+                error={errors.lat?.message || errors.lng?.message}
+              />
+            ) : null}
             <div>
               <Label>Sports</Label>
               <div className="mt-1 flex flex-wrap gap-2">

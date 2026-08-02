@@ -18,6 +18,7 @@ import {
   Textarea,
 } from "@/components/ui/form";
 import { createField } from "@/lib/api/fields";
+import { LocationMapPicker } from "@/components/location-map-picker";
 import { SPORT_OPTIONS, type SportType } from "@/lib/types";
 
 const schema = z.object({
@@ -62,6 +63,8 @@ export default function NewFieldPage() {
   });
 
   const selectedSports = watch("sports") ?? [];
+  const lat = watch("lat");
+  const lng = watch("lng");
 
   function toggleSport(sport: SportType) {
     const next = selectedSports.includes(sport)
@@ -99,7 +102,7 @@ export default function NewFieldPage() {
     <>
       <AppHeader title="New field" description="Add a court or pitch to your inventory." />
       <PageShell>
-        <SoftCard title="Field details" description="Location uses WGS84 (lat/lng). Currency is PKR.">
+        <SoftCard title="Field details" description="Drop a map pin for the court. Currency is PKR.">
           <form onSubmit={handleSubmit(onSubmit)} className="mx-auto max-w-xl space-y-4">
             <div>
               <Label htmlFor="name">Name</Label>
@@ -118,18 +121,14 @@ export default function NewFieldPage() {
               <Label htmlFor="city">City</Label>
               <Input id="city" placeholder="Lahore" {...register("city")} />
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <Label htmlFor="lat">Latitude</Label>
-                <Input id="lat" type="number" step="any" {...register("lat")} />
-                <FieldError message={errors.lat?.message} />
-              </div>
-              <div>
-                <Label htmlFor="lng">Longitude</Label>
-                <Input id="lng" type="number" step="any" {...register("lng")} />
-                <FieldError message={errors.lng?.message} />
-              </div>
-            </div>
+            <LocationMapPicker
+              value={{ lat, lng }}
+              onChange={({ lat: nextLat, lng: nextLng }) => {
+                setValue("lat", nextLat, { shouldValidate: true, shouldDirty: true });
+                setValue("lng", nextLng, { shouldValidate: true, shouldDirty: true });
+              }}
+              error={errors.lat?.message || errors.lng?.message}
+            />
             <div>
               <Label>Sports</Label>
               <div className="mt-1 flex flex-wrap gap-2">
