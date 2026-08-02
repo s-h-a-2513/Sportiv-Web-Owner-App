@@ -8,7 +8,7 @@ Next.js 15 App Router dashboard for Sportiv field owners.
 - Tailwind CSS 4 with Sportiv design tokens
 - Supabase Auth (`@supabase/ssr` + `@supabase/supabase-js`)
 - TanStack Query, Zod, React Hook Form
-- next-themes (light / dark / system)
+- next-themes (light / dark)
 - Recharts, date-fns, Lucide
 - Sentry (`@sentry/nextjs`)
 

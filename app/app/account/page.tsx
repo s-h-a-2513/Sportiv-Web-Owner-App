@@ -131,7 +131,7 @@ export default function AccountPage() {
           />
         </SoftCard>
 
-        <SoftCard title="Appearance" description="Light, dark, or match system preference.">
+        <SoftCard title="Appearance" description="Switch between light and dark mode.">
           <ThemeToggle />
         </SoftCard>
 
