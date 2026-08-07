@@ -1,36 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { AppHeader } from "@/components/app-header";
 import { PageShell, SoftCard, StatChip } from "@/components/ui/page";
 import { Button, FormMessage } from "@/components/ui/form";
 import { formatSports, listOwnerFields } from "@/lib/api/fields";
-import type { Field } from "@/lib/types";
+import { toUserMessage } from "@/lib/errors";
+import { queryKeys } from "@/lib/query-keys";
 
 export default function FieldsPage() {
-  const [fields, setFields] = useState<Field[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const rows = await listOwnerFields();
-        if (!cancelled) setFields(rows);
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load fields");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { data: fields = [], isLoading, error } = useQuery({
+    queryKey: queryKeys.ownerFields,
+    queryFn: listOwnerFields,
+  });
 
   const activeCount = fields.filter((f) => f.is_active).length;
+  const errorMessage = error
+    ? toUserMessage(error, "Failed to load fields")
+    : null;
 
   return (
     <>
@@ -38,8 +26,8 @@ export default function FieldsPage() {
       <PageShell>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="grid w-full gap-3 sm:w-auto sm:grid-cols-2">
-            <StatChip label="Total fields" value={loading ? "…" : String(fields.length)} />
-            <StatChip label="Active" value={loading ? "…" : String(activeCount)} />
+            <StatChip label="Total fields" value={isLoading ? "…" : String(fields.length)} />
+            <StatChip label="Active" value={isLoading ? "…" : String(activeCount)} />
           </div>
           <Link href="/app/fields/new">
             <Button type="button">New field</Button>
@@ -50,10 +38,10 @@ export default function FieldsPage() {
           title="Your fields"
           description="Tap a field to edit details, photos, and schedule."
         >
-          {loading ? (
+          {isLoading ? (
             <p className="text-sm text-muted">Loading fields…</p>
-          ) : error ? (
-            <FormMessage>{error}</FormMessage>
+          ) : errorMessage ? (
+            <FormMessage>{errorMessage}</FormMessage>
           ) : fields.length === 0 ? (
             <div className="neu-inset rounded-[20px] px-4 py-8 text-center">
               <p className="font-semibold text-ink">No fields yet</p>

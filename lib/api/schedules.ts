@@ -22,6 +22,26 @@ export async function listWeeklySchedules(fieldId: string): Promise<FieldWeeklyS
   return (data ?? []) as FieldWeeklySchedule[];
 }
 
+/** Field IDs that already have at least one weekly window. */
+export async function listWeeklyScheduleFieldIds(
+  fieldIds: string[],
+): Promise<Set<string>> {
+  const set = new Set<string>();
+  if (fieldIds.length === 0) return set;
+
+  const supabase = client();
+  const { data, error } = await supabase
+    .from("field_weekly_schedules")
+    .select("field_id")
+    .in("field_id", fieldIds);
+
+  if (error) throw error;
+  for (const row of data ?? []) {
+    set.add((row as { field_id: string }).field_id);
+  }
+  return set;
+}
+
 export async function addWeeklySchedule(input: {
   field_id: string;
   weekday: number;

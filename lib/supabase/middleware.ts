@@ -36,10 +36,9 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const isAppRoute = pathname.startsWith("/app");
-  const isAuthRoute =
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/signup") ||
-    pathname.startsWith("/reset-password");
+  const isPasswordUpdate = pathname === "/reset-password/update";
+  const isLoginOrSignup =
+    pathname.startsWith("/login") || pathname.startsWith("/signup");
 
   if (isAppRoute) {
     if (!user) {
@@ -51,6 +50,7 @@ export async function updateSession(request: NextRequest) {
 
     const role = user.app_metadata?.role;
     if (role !== "owner") {
+      await supabase.auth.signOut();
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/login";
       redirectUrl.searchParams.set("error", "owner_required");
@@ -58,9 +58,18 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  if (isAuthRoute && user && user.app_metadata?.role === "owner") {
+  // Owners on login/signup go to the app; leave reset-password* alone for recovery.
+  if (isLoginOrSignup && user && user.app_metadata?.role === "owner") {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/app";
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // Password update needs a session but must not require owner gate beyond auth.
+  if (isPasswordUpdate && !user) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/login";
+    redirectUrl.searchParams.set("error", "auth_callback");
     return NextResponse.redirect(redirectUrl);
   }
 

@@ -159,10 +159,40 @@ export async function listFieldPhotos(fieldId: string): Promise<FieldPhoto[]> {
   return (data ?? []) as FieldPhoto[];
 }
 
+/** One round-trip: field_id → photo count for checklist. */
+export async function listPhotoCountsByField(
+  fieldIds: string[],
+): Promise<Map<string, number>> {
+  const counts = new Map<string, number>();
+  if (fieldIds.length === 0) return counts;
+
+  const supabase = client();
+  const { data, error } = await supabase
+    .from("field_photos")
+    .select("field_id")
+    .in("field_id", fieldIds);
+
+  if (error) throw error;
+  for (const row of data ?? []) {
+    const id = (row as { field_id: string }).field_id;
+    counts.set(id, (counts.get(id) ?? 0) + 1);
+  }
+  return counts;
+}
+
 export function fieldPhotoPublicUrl(storagePath: string): string {
   const supabase = client();
   const { data } = supabase.storage.from("field-photos").getPublicUrl(storagePath);
   return data.publicUrl;
+}
+
+const PHOTO_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
+const PHOTO_MAX_BYTES = 5_242_880;
+
+function photoExtFromMime(mime: string): string {
+  if (mime === "image/png") return "png";
+  if (mime === "image/webp") return "webp";
+  return "jpg";
 }
 
 export async function uploadFieldPhoto(
@@ -176,7 +206,11 @@ export async function uploadFieldPhoto(
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  if (!PHOTO_MIME.has(file.type) || file.size > PHOTO_MAX_BYTES) {
+    throw new Error("Only JPEG/PNG/WebP under 5MB are allowed");
+  }
+
+  const ext = photoExtFromMime(file.type);
   const path = `${user.id}/${fieldId}/${crypto.randomUUID()}.${ext}`;
 
   const { error: uploadError } = await supabase.storage

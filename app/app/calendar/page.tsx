@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppHeader } from "@/components/app-header";
 import { PageShell, SoftCard } from "@/components/ui/page";
 import { Button, FormMessage, Input, Label, Select } from "@/components/ui/form";
@@ -19,12 +20,11 @@ import {
   karachiDateString,
   weekRangeContaining,
 } from "@/lib/dates";
+import { toUserMessage } from "@/lib/errors";
+import { queryKeys } from "@/lib/query-keys";
 import {
   BOOKING_STATUS_LABELS,
-  type Booking,
   type BookingStatus,
-  type Field,
-  type FieldSlotHold,
 } from "@/lib/types";
 
 const STATUS_FILTERS: BookingStatus[] = [
@@ -37,79 +37,109 @@ const STATUS_FILTERS: BookingStatus[] = [
 ];
 
 export default function CalendarPage() {
-  const [fields, setFields] = useState<Field[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [holds, setHolds] = useState<FieldSlotHold[]>([]);
+  const queryClient = useQueryClient();
   const [anchor, setAnchor] = useState(() => new Date());
   const [fieldFilter, setFieldFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("active");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [rangeFrom, setRangeFrom] = useState("");
   const [rangeTo, setRangeTo] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const [holdField, setHoldField] = useState("");
   const [holdStart, setHoldStart] = useState("");
   const [holdEnd, setHoldEnd] = useState("");
   const [holdReason, setHoldReason] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => window.clearTimeout(t);
+  }, [search]);
 
   const week = useMemo(() => weekRangeContaining(anchor), [anchor]);
-
   const fromIso = rangeFrom ? `${rangeFrom}T00:00:00+05:00` : week.fromIso;
   const toIso = rangeTo ? `${rangeTo}T23:59:59.999+05:00` : week.toIso;
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const ownerFields = await listOwnerFields();
-      setFields(ownerFields);
-      if (!holdField && ownerFields[0]) setHoldField(ownerFields[0].id);
+  const fieldsQuery = useQuery({
+    queryKey: queryKeys.ownerFields,
+    queryFn: listOwnerFields,
+  });
 
-      const fieldIds =
-        fieldFilter === "all" ? ownerFields.map((f) => f.id) : [fieldFilter];
+  const fields = fieldsQuery.data ?? [];
 
-      const statuses =
-        statusFilter === "all"
-          ? undefined
-          : statusFilter === "active"
-            ? (["pending", "confirmed"] as BookingStatus[])
-            : ([statusFilter] as BookingStatus[]);
+  useEffect(() => {
+    if (!holdField && fields[0]) setHoldField(fields[0].id);
+  }, [fields, holdField]);
 
-      const rows = await listBookingsInRange({
+  const fieldIds = useMemo(
+    () =>
+      fieldFilter === "all" ? fields.map((f) => f.id) : [fieldFilter],
+    [fieldFilter, fields],
+  );
+
+  const statuses = useMemo(
+    () =>
+      statusFilter === "all"
+        ? undefined
+        : statusFilter === "active"
+          ? (["pending", "confirmed"] as BookingStatus[])
+          : ([statusFilter] as BookingStatus[]),
+    [statusFilter],
+  );
+
+  const bookingsQuery = useQuery({
+    queryKey: queryKeys.bookingsRange({
+      fromIso,
+      toIso,
+      fieldIds,
+      statuses: statuses?.join(",") ?? "all",
+      search: debouncedSearch,
+    }),
+    enabled: fieldsQuery.isSuccess,
+    queryFn: () =>
+      listBookingsInRange({
         fromIso,
         toIso,
         fieldIds: fieldIds.length
           ? fieldIds
           : ["00000000-0000-0000-0000-000000000000"],
         statuses,
-        search,
-      });
-      setBookings(rows);
+        search: debouncedSearch || undefined,
+      }),
+  });
 
-      if (fieldIds.length === 1) {
-        const h = await listFieldHolds(fieldIds[0], fromIso, toIso);
-        setHolds(h.holds);
-      } else {
-        setHolds([]);
-      }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load calendar");
-    } finally {
-      setLoading(false);
-    }
-  }, [fieldFilter, fromIso, toIso, search, statusFilter, holdField]);
+  const singleFieldId = fieldIds.length === 1 ? fieldIds[0] : null;
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const holdsQuery = useQuery({
+    queryKey: queryKeys.fieldHolds(singleFieldId ?? "", fromIso, toIso),
+    enabled: Boolean(singleFieldId),
+    queryFn: async () => {
+      const h = await listFieldHolds(singleFieldId!, fromIso, toIso);
+      return h.holds;
+    },
+  });
 
   useEffect(() => {
     return subscribeBookings(() => {
-      void load();
+      void queryClient.invalidateQueries({ queryKey: ["bookings-range"] });
+      void queryClient.invalidateQueries({ queryKey: ["field-holds"] });
     });
-  }, [load]);
+  }, [queryClient]);
+
+  const holdMutation = useMutation({
+    mutationFn: createFieldHold,
+    onSuccess: async () => {
+      setHoldStart("");
+      setHoldEnd("");
+      setHoldReason("");
+      setFormError(null);
+      await queryClient.invalidateQueries({ queryKey: ["field-holds"] });
+      await queryClient.invalidateQueries({ queryKey: ["bookings-range"] });
+    },
+    onError: (e) => {
+      setFormError(toUserMessage(e, "Failed to create hold"));
+    },
+  });
 
   const days = useMemo(() => {
     const start = rangeFrom || week.weekStartDate;
@@ -124,26 +154,32 @@ export default function CalendarPage() {
     return list;
   }, [rangeFrom, rangeTo, week.weekEndDate, week.weekStartDate]);
 
-  async function onCreateHold() {
-    setError(null);
-    try {
-      if (!holdField || !holdStart || !holdEnd) {
-        setError("Field, start, and end are required for a hold");
-        return;
-      }
-      await createFieldHold({
-        field_id: holdField,
-        starts_at: new Date(holdStart).toISOString(),
-        ends_at: new Date(holdEnd).toISOString(),
-        reason: holdReason || null,
-      });
-      setHoldStart("");
-      setHoldEnd("");
-      setHoldReason("");
-      await load();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to create hold");
+  const bookings = bookingsQuery.data ?? [];
+  const holds = holdsQuery.data ?? [];
+  const loading =
+    fieldsQuery.isLoading ||
+    bookingsQuery.isLoading ||
+    (Boolean(singleFieldId) && holdsQuery.isLoading);
+  const error =
+    fieldsQuery.error || bookingsQuery.error || holdsQuery.error
+      ? toUserMessage(
+          fieldsQuery.error || bookingsQuery.error || holdsQuery.error,
+          "Failed to load calendar",
+        )
+      : formError;
+
+  function onCreateHold() {
+    setFormError(null);
+    if (!holdField || !holdStart || !holdEnd) {
+      setFormError("Field, start, and end are required for a hold");
+      return;
     }
+    holdMutation.mutate({
+      field_id: holdField,
+      starts_at: new Date(holdStart).toISOString(),
+      ends_at: new Date(holdEnd).toISOString(),
+      reason: holdReason || null,
+    });
   }
 
   return (
@@ -326,7 +362,11 @@ export default function CalendarPage() {
               />
             </div>
             <div className="flex items-end">
-              <Button type="button" onClick={() => void onCreateHold()}>
+              <Button
+                type="button"
+                disabled={holdMutation.isPending}
+                onClick={() => onCreateHold()}
+              >
                 Hold slot
               </Button>
             </div>

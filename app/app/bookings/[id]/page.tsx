@@ -14,6 +14,7 @@ import {
   updateBookingStatus,
 } from "@/lib/api/bookings";
 import { formatKarachi } from "@/lib/dates";
+import { toUserMessage } from "@/lib/errors";
 import { BOOKING_STATUS_LABELS, type Booking } from "@/lib/types";
 
 export default function BookingDetailPage() {
@@ -35,7 +36,7 @@ export default function BookingDetailPage() {
       setBooking(row);
       setNotes(row?.notes ?? "");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load booking");
+      setError(toUserMessage(e, "Failed to load booking"));
     } finally {
       setLoading(false);
     }
@@ -54,7 +55,7 @@ export default function BookingDetailPage() {
       setBooking(updated);
       setMessage("Booking cancelled");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Cancel failed");
+      setError(toUserMessage(e, "Cancel failed"));
     } finally {
       setBusy(false);
     }
@@ -69,7 +70,7 @@ export default function BookingDetailPage() {
       setBooking(updated);
       setMessage(`Marked ${BOOKING_STATUS_LABELS[status].toLowerCase()}`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Update failed");
+      setError(toUserMessage(e, "Update failed"));
     } finally {
       setBusy(false);
     }
@@ -85,9 +86,10 @@ export default function BookingDetailPage() {
       setMessage("Notes saved");
     } catch (e) {
       setError(
-        e instanceof Error
-          ? e.message
-          : "Could not update notes (check RLS allows owner updates)",
+        toUserMessage(
+          e,
+          "Could not update notes (check RLS allows owner updates)",
+        ),
       );
     } finally {
       setBusy(false);

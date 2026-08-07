@@ -28,6 +28,7 @@ import {
 } from "@/lib/api/fields";
 import { parseLatLng } from "@/lib/location";
 import { LocationMapPicker } from "@/components/location-map-picker";
+import { toUserMessage } from "@/lib/errors";
 import { SPORT_OPTIONS, type Field, type FieldPhoto, type SportType } from "@/lib/types";
 
 const schema = z.object({
@@ -97,7 +98,7 @@ export default function FieldDetailPage() {
         is_active: f.is_active,
       });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load field");
+      setError(toUserMessage(e, "Failed to load field"));
     } finally {
       setLoading(false);
     }
@@ -137,7 +138,7 @@ export default function FieldDetailPage() {
       setField(updated);
       setMessage("Field saved");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Save failed");
+      setError(toUserMessage(e, "Save failed"));
     }
   }
 
@@ -149,7 +150,7 @@ export default function FieldDetailPage() {
       setValue("is_active", updated.is_active);
       setMessage(updated.is_active ? "Field activated" : "Field deactivated");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Update failed");
+      setError(toUserMessage(e, "Update failed"));
     }
   }
 
@@ -163,7 +164,7 @@ export default function FieldDetailPage() {
       setPhotos((prev) => [...prev, photo]);
       setMessage("Photo uploaded");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Upload failed");
+      setError(toUserMessage(e, "Upload failed"));
     } finally {
       setUploading(false);
     }
@@ -174,7 +175,7 @@ export default function FieldDetailPage() {
       await deleteFieldPhoto(photo);
       setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Delete failed");
+      setError(toUserMessage(e, "Delete failed"));
     }
   }
 

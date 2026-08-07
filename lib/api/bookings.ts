@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import { toUserMessage } from "@/lib/errors";
 import type {
   Booking,
   BookingStatus,
@@ -67,7 +68,12 @@ export async function createOwnerBooking(
 
   const payload = data as { booking?: Booking; error?: string } | null;
   if (error || payload?.error) {
-    throw new Error(payload?.error || error?.message || "Failed to create booking");
+    throw new Error(
+      toUserMessage(
+        new Error(payload?.error || error?.message || ""),
+        "Failed to create booking",
+      ),
+    );
   }
   if (!payload?.booking) throw new Error("No booking returned");
   return payload.booking;
@@ -81,7 +87,12 @@ export async function cancelBooking(bookingId: string): Promise<Booking> {
 
   const payload = data as { booking?: Booking; error?: string } | null;
   if (error || payload?.error) {
-    throw new Error(payload?.error || error?.message || "Failed to cancel booking");
+    throw new Error(
+      toUserMessage(
+        new Error(payload?.error || error?.message || ""),
+        "Failed to cancel booking",
+      ),
+    );
   }
   if (!payload?.booking) throw new Error("No booking returned");
   return payload.booking;

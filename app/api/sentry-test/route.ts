@@ -1,8 +1,12 @@
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
-/** Temporary first-error verification endpoint — remove after confirmed. */
+/** Dev-only first-error verification endpoint. */
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   const error = new Error(
     "Sportiv owner-web Sentry test error (first-error setup)",
   );

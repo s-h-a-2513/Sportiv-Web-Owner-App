@@ -11,5 +11,6 @@ export const config = {
     "/login",
     "/signup",
     "/reset-password",
+    "/reset-password/:path*",
   ],
 };

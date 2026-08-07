@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { AppHeader } from "@/components/app-header";
 import { PageShell, SoftCard, StatChip } from "@/components/ui/page";
 import { Button, FormMessage } from "@/components/ui/form";
-import { listOwnerFields, listFieldPhotos } from "@/lib/api/fields";
-import { listWeeklySchedules } from "@/lib/api/schedules";
+import { listOwnerFields, listPhotoCountsByField } from "@/lib/api/fields";
+import { listWeeklyScheduleFieldIds } from "@/lib/api/schedules";
 import {
   bookingCustomerLabel,
   listBookingsInRange,
@@ -21,89 +22,122 @@ import {
   startOfTodayKarachiIso,
   todayKarachi,
 } from "@/lib/dates";
-import type { Booking, Field, FieldAnalyticsDaily } from "@/lib/types";
+import { toUserMessage } from "@/lib/errors";
+import { queryKeys } from "@/lib/query-keys";
+import type { Booking, FieldAnalyticsDaily } from "@/lib/types";
 
 export default function OverviewPage() {
-  const [fields, setFields] = useState<Field[]>([]);
-  const [todayBookings, setTodayBookings] = useState<Booking[]>([]);
-  const [upcoming, setUpcoming] = useState<Booking[]>([]);
-  const [analytics, setAnalytics] = useState<FieldAnalyticsDaily[]>([]);
-  const [verification, setVerification] = useState<string>("Pending");
-  const [missingPhotos, setMissingPhotos] = useState<string[]>([]);
-  const [missingSchedule, setMissingSchedule] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const today = todayKarachi();
+  const fromIso = startOfTodayKarachiIso();
+  const toIso = karachiEndOfDayUtc(today).toISOString();
+  const weekTo = addDaysIsoDate(today, 6);
 
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const ownerFields = await listOwnerFields();
-        if (cancelled) return;
-        setFields(ownerFields);
+  const fieldsQuery = useQuery({
+    queryKey: queryKeys.ownerFields,
+    queryFn: listOwnerFields,
+  });
 
-        const today = todayKarachi();
-        const fromIso = startOfTodayKarachiIso();
-        const toIso = karachiEndOfDayUtc(today).toISOString();
-        const weekTo = addDaysIsoDate(today, 6);
+  const fields = fieldsQuery.data ?? [];
+  const fieldIds = useMemo(() => fields.map((f) => f.id), [fields]);
 
-        const fieldIds = ownerFields.map((f) => f.id);
+  const accountQuery = useQuery({
+    queryKey: queryKeys.ownerAccount,
+    queryFn: getOwnerAccount,
+  });
 
-        const [dayRows, upcomingRows, analyticsRows, account] = await Promise.all([
-          fieldIds.length
-            ? listBookingsInRange({
-                fromIso,
-                toIso,
-                fieldIds,
-                statuses: ["pending", "confirmed"],
-              })
-            : Promise.resolve([] as Booking[]),
-          fieldIds.length
-            ? listBookingsInRange({
-                fromIso,
-                toIso: karachiEndOfDayUtc(weekTo).toISOString(),
-                fieldIds,
-                statuses: ["pending", "confirmed"],
-              })
-            : Promise.resolve([] as Booking[]),
-          fieldIds.length
-            ? listAnalyticsForFields(fieldIds, today, weekTo)
-            : Promise.resolve([] as FieldAnalyticsDaily[]),
-          getOwnerAccount(),
-        ]);
+  const todayBookingsQuery = useQuery({
+    queryKey: queryKeys.bookingsRange({
+      fromIso,
+      toIso,
+      fieldIds,
+      statuses: "pending,confirmed",
+    }),
+    enabled: fieldIds.length > 0,
+    queryFn: () =>
+      listBookingsInRange({
+        fromIso,
+        toIso,
+        fieldIds,
+        statuses: ["pending", "confirmed"],
+      }),
+  });
 
-        if (cancelled) return;
-        setTodayBookings(dayRows);
-        setUpcoming(upcomingRows.slice(0, 8));
-        setAnalytics(analyticsRows);
-        setVerification(verificationLabel(account.profile?.verification_status));
+  const upcomingQuery = useQuery({
+    queryKey: queryKeys.bookingsRange({
+      fromIso,
+      toIso: karachiEndOfDayUtc(weekTo).toISOString(),
+      fieldIds,
+      statuses: "pending,confirmed",
+      search: "upcoming",
+    }),
+    enabled: fieldIds.length > 0,
+    queryFn: () =>
+      listBookingsInRange({
+        fromIso,
+        toIso: karachiEndOfDayUtc(weekTo).toISOString(),
+        fieldIds,
+        statuses: ["pending", "confirmed"],
+      }),
+  });
 
-        const noPhoto: string[] = [];
-        const noSchedule: string[] = [];
-        await Promise.all(
-          ownerFields.map(async (f) => {
-            const [photos, weekly] = await Promise.all([
-              listFieldPhotos(f.id),
-              listWeeklySchedules(f.id),
-            ]);
-            if (photos.length === 0) noPhoto.push(f.name);
-            if (weekly.length === 0) noSchedule.push(f.name);
-          }),
-        );
-        if (!cancelled) {
-          setMissingPhotos(noPhoto);
-          setMissingSchedule(noSchedule);
-        }
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load overview");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const analyticsQuery = useQuery({
+    queryKey: queryKeys.analytics(fieldIds, today, weekTo),
+    enabled: fieldIds.length > 0,
+    queryFn: () => listAnalyticsForFields(fieldIds, today, weekTo),
+  });
+
+  const checklistQuery = useQuery({
+    queryKey: queryKeys.overviewChecklist(fieldIds),
+    enabled: fieldIds.length > 0,
+    queryFn: async () => {
+      const [photoCounts, scheduledIds] = await Promise.all([
+        listPhotoCountsByField(fieldIds),
+        listWeeklyScheduleFieldIds(fieldIds),
+      ]);
+      return { photoCounts, scheduledIds };
+    },
+  });
+
+  const loading =
+    fieldsQuery.isLoading ||
+    accountQuery.isLoading ||
+    (fieldIds.length > 0 &&
+      (todayBookingsQuery.isLoading ||
+        upcomingQuery.isLoading ||
+        analyticsQuery.isLoading ||
+        checklistQuery.isLoading));
+
+  const error =
+    fieldsQuery.error ||
+    todayBookingsQuery.error ||
+    upcomingQuery.error ||
+    analyticsQuery.error ||
+    checklistQuery.error ||
+    accountQuery.error
+      ? toUserMessage(
+          fieldsQuery.error ||
+            todayBookingsQuery.error ||
+            upcomingQuery.error ||
+            analyticsQuery.error ||
+            checklistQuery.error ||
+            accountQuery.error,
+          "Failed to load overview",
+        )
+      : null;
+
+  const todayBookings = todayBookingsQuery.data ?? ([] as Booking[]);
+  const upcoming = (upcomingQuery.data ?? []).slice(0, 8);
+  const analytics = analyticsQuery.data ?? ([] as FieldAnalyticsDaily[]);
+  const verification = verificationLabel(
+    accountQuery.data?.profile?.verification_status,
+  );
+
+  const missingPhotos = fields
+    .filter((f) => (checklistQuery.data?.photoCounts.get(f.id) ?? 0) === 0)
+    .map((f) => f.name);
+  const missingSchedule = fields
+    .filter((f) => !checklistQuery.data?.scheduledIds.has(f.id))
+    .map((f) => f.name);
 
   const stats = useMemo(() => aggregateAnalytics(analytics), [analytics]);
   const activeFields = fields.filter((f) => f.is_active).length;

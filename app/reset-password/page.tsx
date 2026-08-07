@@ -8,6 +8,7 @@ import { z } from "zod";
 import { AuthShell } from "@/components/auth-shell";
 import { Button, FieldError, FormMessage, Input, Label } from "@/components/ui/form";
 import { createClient } from "@/lib/supabase/client";
+import { toUserMessage } from "@/lib/errors";
 
 const schema = z.object({
   email: z.string().email("Enter a valid email"),
@@ -33,11 +34,11 @@ export default function ResetPasswordPage() {
     const origin = window.location.origin;
 
     const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
-      redirectTo: `${origin}/login`,
+      redirectTo: `${origin}/auth/callback?next=${encodeURIComponent("/reset-password/update")}`,
     });
 
     if (error) {
-      setFormError(error.message);
+      setFormError(toUserMessage(error, "Could not send reset email. Try again."));
       return;
     }
 
@@ -74,10 +75,6 @@ export default function ResetPasswordPage() {
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? "Sending…" : "Send reset link"}
           </Button>
-
-          <p className="text-center text-xs text-muted">
-            Password update confirmation UI is a stub — wire the recovery session next.
-          </p>
         </form>
       )}
     </AuthShell>

@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/form";
 import { createField } from "@/lib/api/fields";
 import { LocationMapPicker } from "@/components/location-map-picker";
+import { toUserMessage } from "@/lib/errors";
 import { SPORT_OPTIONS, type SportType } from "@/lib/types";
 
 const schema = z.object({
@@ -94,7 +95,7 @@ export default function NewFieldPage() {
       });
       router.replace(`/app/fields/${field.id}`);
     } catch (e) {
-      setFormError(e instanceof Error ? e.message : "Failed to create field");
+      setFormError(toUserMessage(e, "Failed to create field"));
     }
   }
 

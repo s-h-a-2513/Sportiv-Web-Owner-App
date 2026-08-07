@@ -13,6 +13,7 @@ import {
   uploadVerificationDoc,
   verificationLabel,
 } from "@/lib/api/account";
+import { toUserMessage } from "@/lib/errors";
 import type { VerificationStatus } from "@/lib/types";
 
 export default function AccountPage() {
@@ -35,7 +36,7 @@ export default function AccountPage() {
         setBusinessName(profile?.business_name ?? "");
         setVerification(profile?.verification_status ?? "pending");
       })
-      .catch((e) => setError(e instanceof Error ? e.message : "Failed to load account"));
+      .catch((e) => setError(toUserMessage(e, "Failed to load account")));
   }, []);
 
   async function onSave() {
@@ -49,7 +50,7 @@ export default function AccountPage() {
       });
       setMessage("Profile saved");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Save failed");
+      setError(toUserMessage(e, "Save failed"));
     } finally {
       setSaving(false);
     }
@@ -64,7 +65,7 @@ export default function AccountPage() {
       await uploadVerificationDoc(file);
       setMessage("Verification document uploaded. Status stays pending until reviewed.");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Upload failed");
+      setError(toUserMessage(e, "Upload failed"));
     } finally {
       setUploading(false);
     }

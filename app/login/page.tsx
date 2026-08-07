@@ -9,7 +9,7 @@ import { z } from "zod";
 import { AuthShell } from "@/components/auth-shell";
 import { Button, FieldError, FormMessage, Input, Label } from "@/components/ui/form";
 import { createClient } from "@/lib/supabase/client";
-import { isOwner } from "@/lib/auth";
+import { isOwner, safeNextPath } from "@/lib/auth";
 
 const schema = z.object({
   email: z.string().email("Enter a valid email"),
@@ -21,12 +21,14 @@ type FormValues = z.infer<typeof schema>;
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/app";
+  const next = safeNextPath(searchParams.get("next"));
   const urlError = searchParams.get("error");
   const [formError, setFormError] = useState<string | null>(
     urlError === "owner_required"
       ? "This account is not registered as a field owner."
-      : null,
+      : urlError === "auth_callback"
+        ? "Could not complete sign-in. Try again."
+        : null,
   );
 
   const {
@@ -46,7 +48,7 @@ function LoginForm() {
     });
 
     if (error) {
-      setFormError(error.message);
+      setFormError("Sign-in failed. Check your email and password.");
       return;
     }
 
@@ -56,7 +58,7 @@ function LoginForm() {
       return;
     }
 
-    router.replace(next.startsWith("/app") ? next : "/app");
+    router.replace(next);
     router.refresh();
   }
 

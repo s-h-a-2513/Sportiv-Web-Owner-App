@@ -7,6 +7,7 @@ import { PageShell, SoftCard } from "@/components/ui/page";
 import { Button, FormMessage } from "@/components/ui/form";
 import { listOwnerFields } from "@/lib/api/fields";
 import { listWeeklySchedules } from "@/lib/api/schedules";
+import { toUserMessage } from "@/lib/errors";
 import type { Field } from "@/lib/types";
 
 export default function SchedulePage() {
@@ -31,7 +32,7 @@ export default function SchedulePage() {
         );
         if (!cancelled) setHoursCount(counts);
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load");
+        if (!cancelled) setError(toUserMessage(e, "Failed to load"));
       } finally {
         if (!cancelled) setLoading(false);
       }

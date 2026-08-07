@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { AppHeader } from "@/components/app-header";
 import { PageShell, SoftCard } from "@/components/ui/page";
 import {
@@ -18,13 +19,14 @@ import { listOwnerFields } from "@/lib/api/fields";
 import { createOwnerBooking } from "@/lib/api/bookings";
 import { listAvailableSlots } from "@/lib/api/schedules";
 import { formatKarachi, formatKarachiTime, todayKarachi } from "@/lib/dates";
-import type { AvailableSlot, Field } from "@/lib/types";
+import { toUserMessage } from "@/lib/errors";
+import { queryKeys } from "@/lib/query-keys";
+import type { AvailableSlot } from "@/lib/types";
 
 type CustomerMode = "guest" | "player";
 
 export default function NewBookingPage() {
   const router = useRouter();
-  const [fields, setFields] = useState<Field[]>([]);
   const [fieldId, setFieldId] = useState("");
   const [date, setDate] = useState(todayKarachi());
   const [slots, setSlots] = useState<AvailableSlot[]>([]);
@@ -39,15 +41,24 @@ export default function NewBookingPage() {
   const [error, setError] = useState<string | null>(null);
   const [fieldError, setFieldError] = useState<string | null>(null);
 
+  const fieldsQuery = useQuery({
+    queryKey: queryKeys.ownerFields,
+    queryFn: listOwnerFields,
+  });
+
+  const allFields = fieldsQuery.data ?? [];
+  const active = allFields.filter((f) => f.is_active);
+  const fields = active.length ? active : allFields;
+
   useEffect(() => {
-    void listOwnerFields()
-      .then((rows) => {
-        const active = rows.filter((f) => f.is_active);
-        setFields(active.length ? active : rows);
-        if (rows[0]) setFieldId(rows[0].id);
-      })
-      .catch((e) => setError(e instanceof Error ? e.message : "Failed to load fields"));
-  }, []);
+    if (!fieldId && fields[0]) setFieldId(fields[0].id);
+  }, [fields, fieldId]);
+
+  useEffect(() => {
+    if (fieldsQuery.error) {
+      setError(toUserMessage(fieldsQuery.error, "Failed to load fields"));
+    }
+  }, [fieldsQuery.error]);
 
   useEffect(() => {
     if (!fieldId || !date) {
@@ -62,7 +73,7 @@ export default function NewBookingPage() {
         if (!cancelled) setSlots(rows);
       })
       .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load slots");
+        if (!cancelled) setError(toUserMessage(e, "Failed to load slots"));
       })
       .finally(() => {
         if (!cancelled) setLoadingSlots(false);
@@ -119,7 +130,7 @@ export default function NewBookingPage() {
 
       router.replace(`/app/bookings/${booking.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create booking");
+      setError(toUserMessage(err, "Failed to create booking"));
     } finally {
       setSubmitting(false);
     }

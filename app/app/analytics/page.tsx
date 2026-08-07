@@ -1,69 +1,76 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import dynamic from "next/dynamic";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { AppHeader } from "@/components/app-header";
 import { PageShell, SoftCard, StatChip } from "@/components/ui/page";
 import { FormMessage, Label, Select } from "@/components/ui/form";
 import { listOwnerFields } from "@/lib/api/fields";
 import { aggregateAnalytics, listAnalyticsForFields } from "@/lib/api/analytics";
 import { addDaysIsoDate, todayKarachi } from "@/lib/dates";
-import type { Field, FieldAnalyticsDaily } from "@/lib/types";
+import { toUserMessage } from "@/lib/errors";
+import { queryKeys } from "@/lib/query-keys";
+
+const BookingsBarChart = dynamic(
+  () =>
+    import("@/components/analytics-charts").then((m) => m.BookingsBarChart),
+  { ssr: false, loading: () => <ChartLoading /> },
+);
+
+const RevenueOccupancyChart = dynamic(
+  () =>
+    import("@/components/analytics-charts").then((m) => m.RevenueOccupancyChart),
+  { ssr: false, loading: () => <ChartLoading /> },
+);
+
+function ChartLoading() {
+  return (
+    <div className="grid h-full place-items-center text-sm text-muted">Loading chart…</div>
+  );
+}
 
 export default function AnalyticsPage() {
-  const [fields, setFields] = useState<Field[]>([]);
   const [fieldId, setFieldId] = useState("all");
-  const [rows, setRows] = useState<FieldAnalyticsDaily[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const range = useMemo(() => {
     const to = todayKarachi();
     return { from: addDaysIsoDate(to, -13), to };
   }, []);
 
-  useEffect(() => {
-    void listOwnerFields()
-      .then(setFields)
-      .catch((e) => setError(e instanceof Error ? e.message : "Failed to load fields"));
-  }, []);
+  const fieldsQuery = useQuery({
+    queryKey: queryKeys.ownerFields,
+    queryFn: listOwnerFields,
+  });
 
-  useEffect(() => {
-    if (fields.length === 0) {
-      setRows([]);
-      setLoading(false);
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    const ids = fieldId === "all" ? fields.map((f) => f.id) : [fieldId];
-    void listAnalyticsForFields(ids, range.from, range.to)
-      .then((data) => {
-        if (!cancelled) setRows(data);
-      })
-      .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load analytics");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [fields, fieldId, range]);
+  const fields = fieldsQuery.data ?? [];
+  const analyticsFieldIds = useMemo(
+    () => (fieldId === "all" ? fields.map((f) => f.id) : [fieldId]),
+    [fieldId, fields],
+  );
+
+  const analyticsQuery = useQuery({
+    queryKey: queryKeys.analytics(analyticsFieldIds, range.from, range.to),
+    enabled: fieldsQuery.isSuccess && analyticsFieldIds.length > 0,
+    queryFn: () =>
+      listAnalyticsForFields(analyticsFieldIds, range.from, range.to),
+  });
+
+  const rows = analyticsQuery.data ?? [];
+  const loading = fieldsQuery.isLoading || analyticsQuery.isLoading;
+  const error =
+    fieldsQuery.error || analyticsQuery.error
+      ? toUserMessage(
+          fieldsQuery.error || analyticsQuery.error,
+          "Failed to load analytics",
+        )
+      : null;
 
   const chartData = useMemo(() => {
-    const byDay = new Map<string, { day: string; bookings: number; revenue: number; occupancy: number; n: number }>();
+    const byDay = new Map<
+      string,
+      { day: string; bookings: number; revenue: number; occupancy: number; n: number }
+    >();
     for (const r of rows) {
       const cur = byDay.get(r.day) ?? {
         day: r.day.slice(5),
@@ -89,6 +96,7 @@ export default function AnalyticsPage() {
   }, [rows]);
 
   const stats = useMemo(() => aggregateAnalytics(rows), [rows]);
+  const emptyLabel = loading ? "Loading…" : "No analytics yet";
 
   return (
     <>
@@ -128,77 +136,16 @@ export default function AnalyticsPage() {
 
         <SoftCard title="Daily bookings" description="Last 14 days (Asia/Karachi).">
           <div className="h-72 w-full">
-            {chartData.length === 0 ? (
-              <div className="grid h-full place-items-center text-sm text-muted">
-                {loading ? "Loading…" : "No analytics yet"}
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-ink/10" />
-                  <XAxis dataKey="day" tick={{ fill: "currentColor" }} className="text-muted" />
-                  <YAxis allowDecimals={false} tick={{ fill: "currentColor" }} className="text-muted" />
-                  <Tooltip
-                    contentStyle={{
-                      background: "var(--raised)",
-                      border: "none",
-                      borderRadius: 12,
-                      color: "var(--ink)",
-                    }}
-                  />
-                  <Bar dataKey="bookings" fill="var(--court)" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
+            <BookingsBarChart data={chartData} emptyLabel={emptyLabel} />
           </div>
         </SoftCard>
 
-        <SoftCard title="Revenue & occupancy" description="Stacked view of daily revenue and occupancy %.">
+        <SoftCard
+          title="Revenue & occupancy"
+          description="Stacked view of daily revenue and occupancy %."
+        >
           <div className="h-72 w-full">
-            {chartData.length === 0 ? (
-              <div className="grid h-full place-items-center text-sm text-muted">
-                {loading ? "Loading…" : "No analytics yet"}
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-ink/10" />
-                  <XAxis dataKey="day" tick={{ fill: "currentColor" }} className="text-muted" />
-                  <YAxis yAxisId="left" tick={{ fill: "currentColor" }} className="text-muted" />
-                  <YAxis
-                    yAxisId="right"
-                    orientation="right"
-                    tick={{ fill: "currentColor" }}
-                    className="text-muted"
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      background: "var(--raised)",
-                      border: "none",
-                      borderRadius: 12,
-                      color: "var(--ink)",
-                    }}
-                  />
-                  <Line
-                    yAxisId="left"
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke="var(--court)"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                  <Line
-                    yAxisId="right"
-                    type="monotone"
-                    dataKey="occupancy"
-                    stroke="var(--ink)"
-                    strokeWidth={2}
-                    strokeOpacity={0.45}
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
+            <RevenueOccupancyChart data={chartData} emptyLabel={emptyLabel} />
           </div>
         </SoftCard>
       </PageShell>

@@ -7,6 +7,14 @@ Sentry.init({
   ),
   environment: process.env.NODE_ENV,
   tracesSampleRate: process.env.NODE_ENV === "development" ? 1.0 : 0.1,
-  // Attach local variable values to stack frames (Node)
-  includeLocalVariables: true,
+  includeLocalVariables: false,
+  beforeSend(event) {
+    if (event.request?.headers) {
+      delete event.request.headers.authorization;
+      delete event.request.headers.Authorization;
+      delete event.request.headers.cookie;
+      delete event.request.headers.Cookie;
+    }
+    return event;
+  },
 });

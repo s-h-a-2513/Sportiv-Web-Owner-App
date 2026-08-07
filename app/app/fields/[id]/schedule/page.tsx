@@ -22,6 +22,7 @@ import {
   listFieldHolds,
 } from "@/lib/api/holds";
 import { addDaysIsoDate, formatKarachi, todayKarachi } from "@/lib/dates";
+import { toUserMessage } from "@/lib/errors";
 import {
   WEEKDAY_LABELS,
   type AvailableSlot,
@@ -79,7 +80,7 @@ export default function FieldSchedulePage() {
       setHoldsAvailable(h.available);
       setHoldsHint(h.error ?? null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load schedule");
+      setError(toUserMessage(err, "Failed to load schedule"));
     } finally {
       setLoading(false);
     }
@@ -100,7 +101,7 @@ export default function FieldSchedulePage() {
       });
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add hours");
+      setError(toUserMessage(err, "Failed to add hours"));
     }
   }
 
@@ -124,7 +125,7 @@ export default function FieldSchedulePage() {
       });
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save exception");
+      setError(toUserMessage(err, "Failed to save exception"));
     }
   }
 
@@ -146,7 +147,7 @@ export default function FieldSchedulePage() {
       setHoldReason("");
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create hold");
+      setError(toUserMessage(err, "Failed to create hold"));
     }
   }
 
@@ -190,7 +191,7 @@ export default function FieldSchedulePage() {
                     variant="ghost"
                     onClick={() =>
                       void deleteWeeklySchedule(row.id).then(load).catch((err) =>
-                        setError(err instanceof Error ? err.message : "Delete failed"),
+                        setError(toUserMessage(err, "Delete failed")),
                       )
                     }
                   >
@@ -258,7 +259,7 @@ export default function FieldSchedulePage() {
                     variant="ghost"
                     onClick={() =>
                       void deleteScheduleException(row.id).then(load).catch((err) =>
-                        setError(err instanceof Error ? err.message : "Delete failed"),
+                        setError(toUserMessage(err, "Delete failed")),
                       )
                     }
                   >
@@ -328,7 +329,7 @@ export default function FieldSchedulePage() {
                     variant="ghost"
                     onClick={() =>
                       void deleteFieldHold(h.id).then(load).catch((err) =>
-                        setError(err instanceof Error ? err.message : "Delete failed"),
+                        setError(toUserMessage(err, "Delete failed")),
                       )
                     }
                   >

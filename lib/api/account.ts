@@ -70,7 +70,20 @@ export async function uploadVerificationDoc(file: File): Promise<string> {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
-  const ext = file.name.split(".").pop()?.toLowerCase() || "pdf";
+  const allowed = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
+  const maxBytes = 5_242_880;
+  if (!allowed.has(file.type) || file.size > maxBytes) {
+    throw new Error("Only JPEG/PNG/WebP/PDF under 5MB are allowed");
+  }
+
+  const ext =
+    file.type === "application/pdf"
+      ? "pdf"
+      : file.type === "image/png"
+        ? "png"
+        : file.type === "image/webp"
+          ? "webp"
+          : "jpg";
   const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
 
   const { error } = await supabase.storage
