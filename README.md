@@ -35,11 +35,12 @@ Fill in:
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/public key (full JWT, not truncated) |
+| `OWNER_REGISTER_SECRET` | Server-only; must match Edge `OWNER_REGISTER_SECRET` for `/signup` |
 | `NEXT_PUBLIC_SENTRY_DSN` | Optional Sentry DSN |
 
 ### Vercel / production
 
-`.env.local` is not deployed. In the host project settings add the same `NEXT_PUBLIC_SUPABASE_*` variables for **Production** (and Preview if needed), then **redeploy**. If they are missing, the app redirects to `/setup` with instructions instead of a blank error digest.
+`.env.local` is not deployed. In the host project settings add the same `NEXT_PUBLIC_SUPABASE_*` variables **and** `OWNER_REGISTER_SECRET` for **Production** (and Preview if needed), then **redeploy**. If public Supabase env is missing, the app redirects to `/setup` with instructions instead of a blank error digest.
 
 4. **Run the dev server**
 
@@ -52,7 +53,7 @@ Open [http://localhost:3000](http://localhost:3000).
 ## Auth & roles
 
 - `/login` — email/password sign-in; requires `app_metadata.role === "owner"`.
-- `/signup` — calls the `register-owner` Edge Function, then signs the new owner in.
+- `/signup` — posts to `/api/register-owner` (server proxy with `OWNER_REGISTER_SECRET`), which calls the `register-owner` Edge Function, then signs the new owner in.
 - `/reset-password` — password reset email stub.
 - Middleware protects `/app/*` and redirects non-owners to login.
 

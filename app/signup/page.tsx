@@ -42,18 +42,9 @@ export default function SignupPage() {
     setFormError(null);
     setSuccess(false);
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    if (!supabaseUrl) {
-      setFormError("Missing NEXT_PUBLIC_SUPABASE_URL");
-      return;
-    }
-
-    const response = await fetch(`${supabaseUrl}/functions/v1/register-owner`, {
+    const response = await fetch("/api/register-owner", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email: values.email,
         password: values.password,
